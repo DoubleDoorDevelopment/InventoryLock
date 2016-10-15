@@ -1,6 +1,6 @@
 [
   {
-    "modid": "inventorylock",
+    "modid": "InventoryLock",
     "name": "InventoryLock",
     "description": "A server side only Chest locking system",
     "version": "${version}",

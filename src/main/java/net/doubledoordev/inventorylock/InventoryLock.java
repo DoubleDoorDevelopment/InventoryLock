@@ -46,12 +46,10 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.doubledoordev.inventorylock.util.Constants.MOD_NAME;
 import static net.doubledoordev.inventorylock.util.ServerEventHandler.EVENT_HANDLER;
 
 @Mod(
         modid = MOD_ID,
-        name = MOD_NAME,
         acceptableRemoteVersions = "*"
 )
 public class InventoryLock

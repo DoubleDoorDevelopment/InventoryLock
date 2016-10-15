@@ -48,8 +48,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.UUID;
 
-import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.doubledoordev.inventorylock.util.Constants.MOD_NAME;
+import static net.doubledoordev.inventorylock.util.Constants.*;
 import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 
 /**
@@ -89,7 +88,7 @@ public class ServerEventHandler
         if (nbt == null) return;
 
         event.setCanceled(true);
-        Action action = Action.values()[nbt.getByte("Action")];
+        Action action = Action.values()[nbt.getByte(ACTION)];
 
         TileEntity te = event.getWorld().getTileEntity(event.getPos());
         if (te == null) return;
@@ -129,7 +128,7 @@ public class ServerEventHandler
         }
         if (!(existingLc instanceof BetterLockCode))
         {
-            player.addChatComponentMessage(new TextComponentString("This block is not locked via " + MOD_NAME + ".").setStyle(new Style().setColor(TextFormatting.RED)));
+            player.addChatComponentMessage(new TextComponentString("This block is not locked via " + MOD_ID + ".").setStyle(new Style().setColor(TextFormatting.RED)));
             return;
         }
         BetterLockCode blc = ((BetterLockCode) existingLc);
@@ -147,12 +146,12 @@ public class ServerEventHandler
         }
         else if (action == Action.ADD) // We want to add uuids
         {
-            NBTTagList list = nbt.getTagList("UUIDs", TAG_STRING);
+            NBTTagList list = nbt.getTagList(UUIDS, TAG_STRING);
             for (int i = 0; i < list.tagCount(); i++) blc.add(UUID.fromString(list.getStringTagAt(i)));
         }
         else if (action == Action.REMOVE) // We want to remove uuids
         {
-            NBTTagList list = nbt.getTagList("UUIDs", TAG_STRING);
+            NBTTagList list = nbt.getTagList(UUIDS, TAG_STRING);
             for (int i = 0; i < list.tagCount(); i++)
             {
                 UUID uuid = UUID.fromString(list.getStringTagAt(i));
