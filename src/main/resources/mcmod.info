@@ -1,0 +1,19 @@
+[
+  {
+    "modid": "inventorylock",
+    "name": "InventoryLock",
+    "description": "A server side only Chest locking system",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "http://doubledoordev.net/",
+    "updateUrl": "http://doubledoordev.net/InventoryLock.json",
+    "authorList": [
+      "Dries007",
+      "DoubleDoorDevelopment"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
