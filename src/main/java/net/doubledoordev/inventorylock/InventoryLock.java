@@ -32,7 +32,6 @@ import net.doubledoordev.inventorylock.network.Request;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -45,13 +44,10 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
+import static net.doubledoordev.inventorylock.server.ServerEventHandler.EVENT_HANDLER;
 import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.doubledoordev.inventorylock.util.ServerEventHandler.EVENT_HANDLER;
 
-@Mod(
-        modid = MOD_ID,
-        acceptableRemoteVersions = "*"
-)
+@Mod(modid = MOD_ID, acceptableRemoteVersions = "*")
 public class InventoryLock
 {
     @Mod.Instance(MOD_ID)
@@ -79,7 +75,7 @@ public class InventoryLock
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
-        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) MinecraftForge.EVENT_BUS.register(EVENT_HANDLER);
+        MinecraftForge.EVENT_BUS.register(EVENT_HANDLER);
         if (event.getSide().isClient()) MinecraftForge.EVENT_BUS.register(ClientEventHandler.CLIENT_EVENT_HANDLER);
     }
 

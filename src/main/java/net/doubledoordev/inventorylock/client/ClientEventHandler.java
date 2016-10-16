@@ -29,6 +29,9 @@ import com.google.common.cache.CacheBuilder;
 import net.doubledoordev.inventorylock.InventoryLock;
 import net.doubledoordev.inventorylock.network.Reply;
 import net.doubledoordev.inventorylock.network.Request;
+import net.doubledoordev.inventorylock.util.Action;
+import net.doubledoordev.inventorylock.util.Constants;
+import net.doubledoordev.inventorylock.util.Wand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -36,6 +39,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.ILockableContainer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -58,6 +62,16 @@ public class ClientEventHandler
 
     private ClientEventHandler()
     {
+    }
+
+    @SubscribeEvent
+    public void onItemTooltip(ItemTooltipEvent event)
+    {
+        Wand wand = new Wand(event.getItemStack());
+        if (wand.getAction() != Action.NONE)
+        {
+            event.getToolTip().add(0, Constants.MOD_ID + " Wand");
+        }
     }
 
     @SideOnly(Side.CLIENT)

@@ -33,9 +33,7 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.LockCode;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -68,7 +66,7 @@ public class BetterLockCode extends LockCode
 
     public boolean contains(EntityPlayer player)
     {
-        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        MinecraftServer server = player.getServer();
         if (server != null && server.getPlayerList().getOppedPlayers().getPermissionLevel(player.getGameProfile()) > 0)
         {
             if (!contains(player.getUniqueID())) player.addChatComponentMessage(new TextComponentString("OP Bypass").setStyle(new Style().setColor(TextFormatting.GRAY)));

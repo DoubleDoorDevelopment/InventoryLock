@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 
-package net.doubledoordev.inventorylock.util;
+package net.doubledoordev.inventorylock.server;
 
 import com.mojang.authlib.GameProfile;
 import net.doubledoordev.inventorylock.InventoryLock;
+import net.doubledoordev.inventorylock.util.Action;
+import net.doubledoordev.inventorylock.util.BetterLockCode;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.entity.player.EntityPlayer;
@@ -43,7 +45,6 @@ import net.minecraft.world.LockCode;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.UUID;
@@ -70,7 +71,7 @@ public class ServerEventHandler
         if (protection == 0) return;
         final EntityPlayer player = event.getPlayer();
         //noinspection ConstantConditions
-        if (protection == 1 && (player == null || player instanceof FakePlayer || player.getGameProfile() == null || player.getUniqueID() == null)) return;
+        if (player.worldObj.isRemote || protection == 1 && (player == null || player instanceof FakePlayer || player.getGameProfile() == null || player.getUniqueID() == null)) return;
         TileEntity te = event.getWorld().getTileEntity(event.getPos());
         if (!(te instanceof ILockableContainer)) return;
         if (!player.canOpen(((ILockableContainer) te).getLockCode())) event.setCanceled(true);
@@ -80,7 +81,7 @@ public class ServerEventHandler
     public void onPlayerInteractRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
         EntityPlayer player = event.getEntityPlayer();
-        if (player == null || player instanceof FakePlayer) return;
+        if (player == null || player instanceof FakePlayer || player.worldObj.isRemote) return;
         ItemStack stack = event.getItemStack();
         if (stack == null) return;
         NBTTagCompound nbt = stack.getSubCompound(MOD_ID, false);
@@ -132,6 +133,11 @@ public class ServerEventHandler
             return;
         }
         BetterLockCode blc = ((BetterLockCode) existingLc);
+        if (action == Action.INSPECT)
+        {
+            printList(player, blc); // Bypass contains check
+            return;
+        }
         if (!blc.contains(player))
         {
             player.addChatComponentMessage(new TextComponentString("You do not have access to this block.").setStyle(new Style().setColor(TextFormatting.RED)));
@@ -158,11 +164,17 @@ public class ServerEventHandler
                 if (!player.getUniqueID().equals(uuid)) blc.remove(uuid); // Anti self lockout
             }
         }
-        // Print this for ADD, REMOVE & INSPECT (LOCK & UNLOCK return early)
+        // Print this for ADD, REMOVE (LOCK, INSPECT & UNLOCK return early)
+        printList(player, blc);
+    }
+
+    private void printList(EntityPlayer player, BetterLockCode blc)
+    {
         player.addChatComponentMessage(new TextComponentString("People with access:").setStyle(new Style().setColor(TextFormatting.AQUA)));
         for (UUID uuid : blc.list)
         {
-            PlayerProfileCache ppc = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerProfileCache();
+            //noinspection ConstantConditions
+            PlayerProfileCache ppc = player.getServer().getPlayerProfileCache();
             GameProfile gp = ppc.getProfileByUUID(uuid);
             if (gp == null) player.addChatComponentMessage(new TextComponentString(uuid.toString()).setStyle(new Style().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString("Missing username...")))));
             else player.addChatComponentMessage(new TextComponentString(gp.getName()).setStyle(new Style().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(uuid.toString())))));

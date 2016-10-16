@@ -38,13 +38,12 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.doubledoordev.inventorylock.util.Constants.ACTION;
-import static net.doubledoordev.inventorylock.util.Constants.UUIDS;
-import static net.doubledoordev.inventorylock.util.Constants.DISPLAY;
-import static net.doubledoordev.inventorylock.util.Constants.LORE;
+import static net.doubledoordev.inventorylock.util.Constants.*;
 import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 
 /**
@@ -77,7 +76,9 @@ public class Wand
 
     public Action getAction()
     {
-        NBTTagCompound tag = stack.getSubCompound(MOD_ID, true);
+        NBTTagCompound tag = stack.getSubCompound(MOD_ID, false);
+        //noinspection ConstantConditions
+        if (tag == null) return Action.NONE;
         return Action.values()[(int) tag.getByte(ACTION)];
     }
 

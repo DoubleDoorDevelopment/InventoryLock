@@ -32,10 +32,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.EnumHand;
@@ -45,10 +41,9 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
-import java.util.*;
-
-import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Dries007
@@ -62,29 +57,23 @@ public class InventoryLockCommand extends CommandBase
     }
 
     @Override
-    public int getRequiredPermissionLevel()
+    public boolean checkPermission(MinecraftServer server, ICommandSender sender)
     {
-        return 0;
+        return true;
     }
 
     @Override
     public String getCommandUsage(ICommandSender sender)
     {
-        return "Lock and unlock inventories!";
+        return "Use '/inventorylock help' for more info.";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         EntityPlayerMP player = getCommandSenderAsPlayer(sender);
-        if (args.length == 0 || args[0].equalsIgnoreCase("help"))
-        {
-            displayHelp(player);
-        }
-        else if (args[0].equalsIgnoreCase("list"))
-        {
-            listKeys(player);
-        }
+        if (args.length == 0 || args[0].equalsIgnoreCase("help")) displayHelp(player);
+        else if (args[0].equalsIgnoreCase("list")) listKeys(player);
         else if (args[0].equalsIgnoreCase("lock"))
         {
             Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Lock wand").setAction(Action.LOCK);
@@ -122,17 +111,17 @@ public class InventoryLockCommand extends CommandBase
     {
         for (String s : new String[]{
                 TextFormatting.AQUA + getCommandName() + " sub command help:",
-                "ProTip: Use TAB to auto complete a command or username!",
+                TextFormatting.GREEN + "ProTip: Use TAB to auto complete a command or username!",
                 "- help: Display this text.",
                 "- list: List what items can become wands.",
                 "- lock: Create a 'Lock wand' from the held item.",
                 "- unlock: Create a 'Unlock wand' from the held item.",
                 "- clone: Copy a wand from primary to secondary hand.",
                 "- inspect: Create a 'Inspect wand' from the held item.",
-                "If you are holding an existing Add or Remove wand:",
+                TextFormatting.AQUA + "If you are holding an existing Add or Remove wand:",
                 "- add [name or UUID] ... : Add names to the UUID list.",
                 "- remove [name or UUID] ... : Remove names from the UUID list.",
-                "If you are NOT holding an existing Add or Remove wand:",
+                TextFormatting.AQUA + "If you are NOT holding an existing Add or Remove wand:",
                 "- add [name or UUID] ... : Create a 'Add wand'.",
                 "- remove [name or UUID] ... : Create a 'Remove wand'.",
         }) sender.addChatComponentMessage(new TextComponentString(s));
@@ -159,7 +148,7 @@ public class InventoryLockCommand extends CommandBase
         int diff = map.size();
         parseArgs(server.getPlayerProfileCache(), player, args, map, false);
         diff = map.size() - diff;
-        if (newWand) player.addChatComponentMessage(new TextComponentString("You are now holding a Add want with " + diff + " names.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+        if (newWand) player.addChatComponentMessage(new TextComponentString("You are now holding a Add wand with " + diff + " names.").setStyle(new Style().setColor(TextFormatting.AQUA)));
         else if (diff > 0) player.addChatComponentMessage(new TextComponentString("Added " + diff + " names to existing wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
         else player.addChatComponentMessage(new TextComponentString("Wand was not modified.").setStyle(new Style().setColor(TextFormatting.RED)));
         wand.setUUIDs(map);
@@ -174,7 +163,7 @@ public class InventoryLockCommand extends CommandBase
         int diff = map.size();
         parseArgs(server.getPlayerProfileCache(), player, args, map, !newWand);
         diff = map.size() - diff;
-        if (newWand) player.addChatComponentMessage(new TextComponentString("You are now holding a Add want with " + diff + " names.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+        if (newWand) player.addChatComponentMessage(new TextComponentString("You are now holding a Remove wand with " + diff + " names.").setStyle(new Style().setColor(TextFormatting.AQUA)));
         else if (diff < 0) player.addChatComponentMessage(new TextComponentString("Removed " + (-diff) + " names to existing wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
         else player.addChatComponentMessage(new TextComponentString("Wand was not modified.").setStyle(new Style().setColor(TextFormatting.RED)));
         wand.setUUIDs(map);
