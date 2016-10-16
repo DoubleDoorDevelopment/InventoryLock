@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
-import groovy.json.*
+
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 buildscript {
     repositories {
@@ -39,15 +42,18 @@ buildscript {
 
 apply plugin: "net.minecraftforge.gradle.forge"
 
-version = modVersion
-group = modGroup
-archivesBaseName = archivesBaseName
+group = "net.doubledoordev"
+archivesBaseName = "InventoryLock"
+version = "1.0.0"
 if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
 
+targetCompatibility = 1.7
+sourceCompatibility = 1.7
+
 minecraft {
-    version = project.forgeVersion
+    version = "1.10.2-12.18.2.2099"
     runDir = "run"
-    mappings = project.mcpVersion
+    mappings = "snapshot_20161013"
 }
 
 repositories {
