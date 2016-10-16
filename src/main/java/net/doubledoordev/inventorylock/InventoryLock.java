@@ -46,8 +46,9 @@ import java.util.List;
 
 import static net.doubledoordev.inventorylock.server.ServerEventHandler.EVENT_HANDLER;
 import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
+import static net.doubledoordev.inventorylock.util.Constants.MOD_NAME;
 
-@Mod(modid = MOD_ID, acceptableRemoteVersions = "*")
+@Mod(modid = MOD_ID, name = MOD_NAME, acceptableRemoteVersions = "*")
 public class InventoryLock
 {
     @Mod.Instance(MOD_ID)

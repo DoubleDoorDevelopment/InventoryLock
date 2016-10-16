@@ -25,13 +25,14 @@
 package net.doubledoordev.inventorylock.asm;
 
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
+import net.minecraft.launchwrapper.Launch;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import static net.doubledoordev.inventorylock.asm.Plugin.LOGGER;
+import static net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper.INSTANCE;
 
 /**
  * @author Dries007
@@ -39,24 +40,41 @@ import static net.doubledoordev.inventorylock.asm.Plugin.LOGGER;
 @SuppressWarnings("unused")
 public class Transformer implements IClassTransformer
 {
+    private static final String LOCK_CODE_NAME = "fromNBT";
+    private static final String BETTER_LOCK_CONTAINS = "contains";
+
+    private static final String BETTER_LOCK_TYPE = "net/doubledoordev/inventorylock/util/BetterLockCode";
+    private static final String LOCK_CODE_OWNER_REPLACE = "net/doubledoordev/inventorylock/asm/Hooks";
+
     private static final String LOCK_CODE_OWNER = "net/minecraft/world/LockCode";
     private static final String LOCK_CODE_DESC = "(Lnet/minecraft/nbt/NBTTagCompound;)Lnet/minecraft/world/LockCode;";
-    private static final String LOCK_CODE_NAME = "fromNBT";
-    private static final String LOCK_CODE_OWNER_REPLACE = "net/doubledoordev/inventorylock/asm/Hooks";
-    private static final String LOCK_CODE_TARGET = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(LOCK_CODE_OWNER, LOCK_CODE_NAME, LOCK_CODE_DESC);
+
     private static final String ENTITY_PLAYER_OWNER = "net/minecraft/entity/player/EntityPlayer";
     private static final String ENTITY_PLAYER_OWNER_NAME = ENTITY_PLAYER_OWNER.replace('/', '.');
+
     private static final String ENTITY_PLAYER_DESC = "(Lnet/minecraft/world/LockCode;)Z";
-    private static final String ENTITY_PLAYER_TARGET = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(ENTITY_PLAYER_OWNER, "canOpen", ENTITY_PLAYER_DESC);
-//    private static final String ENTITY_PLATER_GET_UUID_DESC = "()Ljava/util/UUID;";
-//    private static final String ENTITY_PLAYER_GET_UUID = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(ENTITY_PLAYER_OWNER, "getUniqueID", ENTITY_PLATER_GET_UUID_DESC);
     private static final String BETTER_LOCK_CONTAINS_DESC = "(Lnet/minecraft/entity/player/EntityPlayer;)Z";
-    private static final String BETTER_LOCK_CONTAINS = "contains";
-    private static final String BETTER_LOCK_TYPE = "net/doubledoordev/inventorylock/util/BetterLockCode";
+
+    private static final String LOCK_CODE_TARGET;
+    private static final String ENTITY_PLAYER_TARGET;
+
+    static
+    {
+        if ((Boolean)Launch.blackboard.get("fml.deobfuscatedEnvironment"))
+        {
+            LOCK_CODE_TARGET = "fromNBT";
+            ENTITY_PLAYER_TARGET = "canOpen";
+        }
+        else
+        {
+            LOCK_CODE_TARGET = "func_180158_b";
+            ENTITY_PLAYER_TARGET = "func_175146_a";
+        }
+    }
 
     public Transformer()
     {
-        Plugin.LOGGER.info("Loaded Black magic aka Transformer with target name {}", LOCK_CODE_TARGET);
+        LOGGER.info("Loaded Black magic aka Transformer. Deobf: {}", Launch.blackboard.get("fml.deobfuscatedEnvironment"));
     }
 
     @Override
@@ -66,13 +84,14 @@ public class Transformer implements IClassTransformer
         ClassReader classReader = new ClassReader(basicClass);
         classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
 
-        boolean isPlayer = name.equals(ENTITY_PLAYER_OWNER_NAME);
+        boolean isPlayer = transformedName.equals(ENTITY_PLAYER_OWNER_NAME);
         if (isPlayer) LOGGER.info("Found EntityPlayer");
 
         for (MethodNode method : classNode.methods)
         {
             InsnList list = method.instructions;
-            if (isPlayer && method.name.equals(ENTITY_PLAYER_TARGET) && method.desc.equals(ENTITY_PLAYER_DESC))
+            if (isPlayer && INSTANCE.mapMethodDesc(method.desc).equals(ENTITY_PLAYER_DESC) &&
+                    INSTANCE.mapMethodName(name, method.name, method.desc).equals(ENTITY_PLAYER_TARGET))
             {
                 final LabelNode newLabel = new LabelNode();
                 LOGGER.info("Found canOpen");
@@ -109,14 +128,13 @@ public class Transformer implements IClassTransformer
             {
                 if (node.getOpcode() != Opcodes.INVOKESTATIC) continue;
                 MethodInsnNode methodInsnNode = ((MethodInsnNode) node);
-                if (methodInsnNode.owner.equals(LOCK_CODE_OWNER) && methodInsnNode.desc.equals(LOCK_CODE_DESC))
+                if (methodInsnNode.owner.equals(LOCK_CODE_OWNER) &&
+                        INSTANCE.mapMethodDesc(methodInsnNode.desc).equals(LOCK_CODE_DESC) &&
+                        INSTANCE.mapMethodName(methodInsnNode.owner, methodInsnNode.name, methodInsnNode.desc).equals(LOCK_CODE_TARGET))
                 {
-                    if (methodInsnNode.name.equals(LOCK_CODE_TARGET) || methodInsnNode.name.equals(LOCK_CODE_NAME))
-                    {
-                        methodInsnNode.owner = LOCK_CODE_OWNER_REPLACE;
-                        methodInsnNode.name = LOCK_CODE_NAME;
-                        LOGGER.info("Replaced call in class {} ({}), method {}{}", name, transformedName, method.name, method.desc);
-                    }
+                    methodInsnNode.owner = LOCK_CODE_OWNER_REPLACE;
+                    methodInsnNode.name = LOCK_CODE_NAME;
+                    LOGGER.info("Replaced call in class {} ({}), method {}{}", name, transformedName, method.name, method.desc);
                 }
             }
         }
