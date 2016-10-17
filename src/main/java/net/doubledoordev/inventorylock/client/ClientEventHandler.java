@@ -49,7 +49,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 public class ClientEventHandler
 {
     public static final ClientEventHandler CLIENT_EVENT_HANDLER = new ClientEventHandler();
-    public static final Cache<BlockPos, Set<String>> LOCK_CACHE = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
+    public static final Cache<BlockPos, Reply> LOCK_CACHE = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
 
     private ClientEventHandler()
     {
@@ -93,21 +92,21 @@ public class ClientEventHandler
             right.add(TextFormatting.GREEN + "Lockable!");
             right.add("This info updates every 5 seconds.");
 
-            Set<String> list = LOCK_CACHE.getIfPresent(blockpos);
-            if (list == null)
+            Reply reply = LOCK_CACHE.getIfPresent(blockpos);
+            if (reply == null)
             {
                 right.add("No information (yet)...");
                 return;
             }
-            if (list.isEmpty())
+            if (reply.value.isEmpty())
             {
                 right.add(TextFormatting.GOLD + "Unlocked");
                 return;
             }
             right.add(TextFormatting.GOLD + "Locked");
-            right.add(list.contains(mc.thePlayer.getName()) ? TextFormatting.GREEN + "You have access!" : TextFormatting.RED + "You do not have access.");
+            right.add(reply.pub ? TextFormatting.GOLD + "Public" : (reply.value.contains(mc.thePlayer.getName()) ? TextFormatting.GREEN + "You have access!" : TextFormatting.RED + "You do not have access."));
             right.add("List of people with access:");
-            right.addAll(list);
+            right.addAll(reply.value);
         }
     }
 
@@ -133,7 +132,7 @@ public class ClientEventHandler
         @Override
         public IMessage onMessage(Reply message, MessageContext ctx)
         {
-            LOCK_CACHE.put(message.key, message.value);
+            LOCK_CACHE.put(message.key, message);
             return null;
         }
     }

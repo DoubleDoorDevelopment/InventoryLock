@@ -29,7 +29,7 @@ package net.doubledoordev.inventorylock.util;
  */
 public enum Action
 {
-    NONE(false), LOCK(false), UNLOCK(false), ADD(true), REMOVE(true), INSPECT(false);
+    NONE(false), LOCK(false), UNLOCK(false), ADD(true), REMOVE(true), INSPECT(false), PUBLIC(false);
 
     public final boolean hasUUIDs;
 

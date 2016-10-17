@@ -150,6 +150,12 @@ public class ServerEventHandler
             player.addChatComponentMessage(new TextComponentString("Unlocked!").setStyle(new Style().setColor(TextFormatting.GREEN)));
             return;
         }
+        else if (action == Action.PUBLIC) // We want to make public (set back to the EMPTY_CODE singleton)
+        {
+            blc.setPublic(!blc.isPublic());
+            player.addChatComponentMessage(new TextComponentString("Unlocked!").setStyle(new Style().setColor(TextFormatting.GREEN)));
+            return;
+        }
         else if (action == Action.ADD) // We want to add uuids
         {
             NBTTagList list = nbt.getTagList(UUIDS, TAG_STRING);
@@ -170,7 +176,8 @@ public class ServerEventHandler
 
     private void printList(EntityPlayer player, BetterLockCode blc)
     {
-        player.addChatComponentMessage(new TextComponentString("People with access:").setStyle(new Style().setColor(TextFormatting.AQUA)));
+        if (blc.isPublic()) player.addChatComponentMessage(new TextComponentString("Public chest, but owned by:").setStyle(new Style().setColor(TextFormatting.AQUA)));
+        else player.addChatComponentMessage(new TextComponentString("People with access:").setStyle(new Style().setColor(TextFormatting.AQUA)));
         for (UUID uuid : blc.list)
         {
             //noinspection ConstantConditions

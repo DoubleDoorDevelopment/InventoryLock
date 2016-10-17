@@ -24,6 +24,7 @@
 
 package net.doubledoordev.inventorylock.cmd;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.authlib.GameProfile;
 import net.doubledoordev.inventorylock.InventoryLock;
 import net.doubledoordev.inventorylock.util.Action;
@@ -54,6 +55,12 @@ public class InventoryLockCommand extends CommandBase
     public String getCommandName()
     {
         return "inventorylock";
+    }
+
+    @Override
+    public List<String> getCommandAliases()
+    {
+        return ImmutableList.of("invlock");
     }
 
     @Override
@@ -94,6 +101,11 @@ public class InventoryLockCommand extends CommandBase
             Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Inspect wand").setAction(Action.INSPECT);
             player.addChatComponentMessage(new TextComponentString("You are now holding a Inspect wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
         }
+        else if (args[0].equalsIgnoreCase("public"))
+        {
+            Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Public wand").setAction(Action.PUBLIC);
+            player.addChatComponentMessage(new TextComponentString("You are now holding a Public wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+        }
         else if (args[0].equalsIgnoreCase("add")) doAdd(server, player, args);
         else if (args[0].equalsIgnoreCase("remove")) doRemove(server, player, args);
         else displayHelp(player);
@@ -102,7 +114,7 @@ public class InventoryLockCommand extends CommandBase
     @Override
     public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
-        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "help", "list", "lock", "unlock", "clone", "inspect", "add", "remove");
+        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "help", "list", "lock", "unlock", "clone", "inspect", "public", "add", "remove");
         if (args.length > 1 && (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove"))) return getListOfStringsMatchingLastWord(args, server.getAllUsernames());
         return super.getTabCompletionOptions(server, sender, args, pos);
     }
@@ -118,6 +130,7 @@ public class InventoryLockCommand extends CommandBase
                 "- unlock: Create a 'Unlock wand' from the held item.",
                 "- clone: Copy a wand from primary to secondary hand.",
                 "- inspect: Create a 'Inspect wand' from the held item.",
+                "- public: Create a 'Public wand' from the held item.",
                 TextFormatting.AQUA + "If you are holding an existing Add or Remove wand:",
                 "- add [name or UUID] ... : Add names to the UUID list.",
                 "- remove [name or UUID] ... : Remove names from the UUID list.",

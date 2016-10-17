@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
+import static net.doubledoordev.inventorylock.util.Constants.PUBLIC_KEY;
 
 /**
  * @author Dries007
@@ -46,6 +47,7 @@ import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
 public class BetterLockCode extends LockCode
 {
     public final Set<UUID> list = new LinkedHashSet<UUID>();
+    private boolean pub;
 
     public BetterLockCode()
     {
@@ -66,18 +68,14 @@ public class BetterLockCode extends LockCode
 
     public boolean contains(EntityPlayer player)
     {
+        if (pub) return true;
         MinecraftServer server = player.getServer();
         if (server != null && server.getPlayerList().getOppedPlayers().getPermissionLevel(player.getGameProfile()) > 0)
         {
-            if (!contains(player.getUniqueID())) player.addChatComponentMessage(new TextComponentString("OP Bypass").setStyle(new Style().setColor(TextFormatting.GRAY)));
+            if (!list.contains(player.getUniqueID())) player.addChatComponentMessage(new TextComponentString("OP Bypass").setStyle(new Style().setColor(TextFormatting.GRAY)));
             return true;
         }
-        return contains(player.getUniqueID());
-    }
-
-    public boolean contains(UUID uuid)
-    {
-        return list.contains(uuid);
+        return list.contains(player.getUniqueID());
     }
 
     @Override
@@ -92,5 +90,16 @@ public class BetterLockCode extends LockCode
         NBTTagList list = new NBTTagList();
         for (UUID uuid : this.list) list.appendTag(new NBTTagString(uuid.toString()));
         nbt.setTag(MOD_ID, list);
+        nbt.setBoolean(PUBLIC_KEY, pub);
+    }
+
+    public boolean isPublic()
+    {
+        return pub;
+    }
+
+    public void setPublic(boolean pub)
+    {
+        this.pub = pub;
     }
 }

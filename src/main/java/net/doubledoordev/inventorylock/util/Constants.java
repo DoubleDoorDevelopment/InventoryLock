@@ -30,6 +30,7 @@ package net.doubledoordev.inventorylock.util;
 public class Constants
 {
     public static final String MOD_ID = "inventorylock";
+    public static final String PUBLIC_KEY = MOD_ID + "Public";
     public static final String MOD_NAME = "InventoryLock";
     public static final String ACTION = "Action";
     public static final String UUIDS = "UUIDs";

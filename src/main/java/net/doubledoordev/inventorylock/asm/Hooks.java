@@ -32,6 +32,7 @@ import net.minecraft.world.LockCode;
 import java.util.UUID;
 
 import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
+import static net.doubledoordev.inventorylock.util.Constants.PUBLIC_KEY;
 
 /**
  * @author Dries007
@@ -46,13 +47,11 @@ public class Hooks
     {
         if (nbt.hasKey(MOD_ID, net.minecraftforge.common.util.Constants.NBT.TAG_LIST))
         {
-            BetterLockCode betterLockCode = new BetterLockCode();
+            BetterLockCode blc = new BetterLockCode();
             NBTTagList list = nbt.getTagList(MOD_ID, net.minecraftforge.common.util.Constants.NBT.TAG_STRING);
-            for (int i = 0; i < list.tagCount(); i++)
-            {
-                betterLockCode.add(UUID.fromString(list.getStringTagAt(i)));
-            }
-            return betterLockCode;
+            for (int i = 0; i < list.tagCount(); i++) blc.add(UUID.fromString(list.getStringTagAt(i)));
+            blc.setPublic(nbt.getBoolean(PUBLIC_KEY));
+            return blc;
         }
         return LockCode.fromNBT(nbt);
     }

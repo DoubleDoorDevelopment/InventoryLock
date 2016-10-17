@@ -43,6 +43,7 @@ import java.util.UUID;
 public class Reply implements IMessage
 {
     public BlockPos key;
+    public boolean pub;
     public Set<String> value = new LinkedHashSet<String>();
 
     public Reply(BlockPos key, BetterLockCode blc)
@@ -55,6 +56,7 @@ public class Reply implements IMessage
             if (gp == null) value.add(uuid.toString());
             else value.add(gp.getName());
         }
+        pub = blc.isPublic();
     }
 
     @SuppressWarnings("unused")
@@ -68,6 +70,7 @@ public class Reply implements IMessage
         key = BlockPos.fromLong(buf.readLong());
         int i = buf.readInt();
         while (i-- > 0) value.add(ByteBufUtils.readUTF8String(buf));
+        pub = buf.readBoolean();
     }
 
     @Override
@@ -76,5 +79,6 @@ public class Reply implements IMessage
         buf.writeLong(key.toLong());
         buf.writeInt(value.size());
         for (String name : value) ByteBufUtils.writeUTF8String(buf, name);
+        buf.writeBoolean(pub);
     }
 }
