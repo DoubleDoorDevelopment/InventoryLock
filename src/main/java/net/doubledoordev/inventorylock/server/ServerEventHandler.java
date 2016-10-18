@@ -138,7 +138,7 @@ public class ServerEventHandler
             printList(player, blc); // Bypass contains check
             return;
         }
-        if (!blc.contains(player))
+        if (!blc.canEdit(player))
         {
             player.addChatComponentMessage(new TextComponentString("You do not have access to this block.").setStyle(new Style().setColor(TextFormatting.RED)));
             return;

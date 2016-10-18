@@ -68,7 +68,11 @@ public class BetterLockCode extends LockCode
 
     public boolean contains(EntityPlayer player)
     {
-        if (pub) return true;
+        return pub || canEdit(player);
+    }
+
+    public boolean canEdit(EntityPlayer player)
+    {
         MinecraftServer server = player.getServer();
         if (server != null && server.getPlayerList().getOppedPlayers().getPermissionLevel(player.getGameProfile()) > 0)
         {
