@@ -33,6 +33,11 @@ import org.objectweb.asm.tree.*;
 
 import static net.doubledoordev.inventorylock.asm.Plugin.LOGGER;
 import static net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper.INSTANCE;
+import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
+import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
+import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
+import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.tree.AbstractInsnNode.LABEL;
 
 /**
  * @author Dries007
@@ -82,7 +87,7 @@ public class Transformer implements IClassTransformer
     {
         ClassNode classNode = new ClassNode();
         ClassReader classReader = new ClassReader(basicClass);
-        classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
+        classReader.accept(classNode, EXPAND_FRAMES);
 
         boolean isPlayer = transformedName.equals(ENTITY_PLAYER_OWNER_NAME);
         if (isPlayer) LOGGER.info("Found EntityPlayer");
@@ -96,37 +101,37 @@ public class Transformer implements IClassTransformer
                 final LabelNode newLabel = new LabelNode();
                 LOGGER.info("Found canOpen");
                 AbstractInsnNode node = list.getFirst();
-                while (node.getOpcode() != Opcodes.IRETURN && node != list.getLast())
+                while (node.getOpcode() != IRETURN && node != list.getLast())
                 {
-                    if (node.getOpcode() == Opcodes.IFEQ) ((JumpInsnNode) node).label = newLabel;
+                    if (node.getOpcode() == IFEQ) ((JumpInsnNode) node).label = newLabel;
                     node = node.getNext();
                 }
-                if (node.getOpcode() != Opcodes.IRETURN) throw new RuntimeException("ASM failed. (return not found)");
+                if (node.getOpcode() != IRETURN) throw new RuntimeException("ASM failed. (return not found)");
                 final AbstractInsnNode target = node;
-                while (node.getType() != AbstractInsnNode.LABEL && node != list.getLast()) node = node.getNext();
-                if (node.getType() != AbstractInsnNode.LABEL) throw new RuntimeException("ASM failed. (label not found)");
+                while (node.getType() != LABEL && node != list.getLast()) node = node.getNext();
+                if (node.getType() != LABEL) throw new RuntimeException("ASM failed. (label not found)");
                 final LabelNode label = ((LabelNode) node);
 
                 //Adding "else if (code instanceof BetterLockCode) return ((BetterLockCode) code).contains(this.getUniqueID());"
                 InsnList inject = new InsnList();
 
                 inject.add(newLabel);
-                inject.add(new VarInsnNode(Opcodes.ALOAD, 1));
-                inject.add(new TypeInsnNode(Opcodes.INSTANCEOF, BETTER_LOCK_TYPE));
-                inject.add(new JumpInsnNode(Opcodes.IFEQ, label));
-                inject.add(new VarInsnNode(Opcodes.ALOAD, 1));
-                inject.add(new TypeInsnNode(Opcodes.CHECKCAST, BETTER_LOCK_TYPE));
-                inject.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                inject.add(new VarInsnNode(ALOAD, 1));
+                inject.add(new TypeInsnNode(INSTANCEOF, BETTER_LOCK_TYPE));
+                inject.add(new JumpInsnNode(IFEQ, label));
+                inject.add(new VarInsnNode(ALOAD, 1));
+                inject.add(new TypeInsnNode(CHECKCAST, BETTER_LOCK_TYPE));
+                inject.add(new VarInsnNode(ALOAD, 0));
                 //inject.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ENTITY_PLAYER_OWNER, ENTITY_PLAYER_GET_UUID, ENTITY_PLATER_GET_UUID_DESC, false));
                 inject.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BETTER_LOCK_TYPE, BETTER_LOCK_CONTAINS, BETTER_LOCK_CONTAINS_DESC, false));
-                inject.add(new InsnNode(Opcodes.IRETURN));
+                inject.add(new InsnNode(IRETURN));
 
                 list.insert(target, inject);
                 LOGGER.info("Injected elseif into EntityPlayer's canOpen");
             }
             for (AbstractInsnNode node = list.getFirst(); node != list.getLast(); node = node.getNext())
             {
-                if (node.getOpcode() != Opcodes.INVOKESTATIC) continue;
+                if (node.getOpcode() != INVOKESTATIC) continue;
                 MethodInsnNode methodInsnNode = ((MethodInsnNode) node);
                 if (methodInsnNode.owner.equals(LOCK_CODE_OWNER) &&
                         INSTANCE.mapMethodDesc(methodInsnNode.desc).equals(LOCK_CODE_DESC) &&
@@ -139,7 +144,7 @@ public class Transformer implements IClassTransformer
             }
         }
 
-        final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        final ClassWriter writer = new ClassWriter(COMPUTE_MAXS | COMPUTE_FRAMES);
         classNode.accept(writer);
         return writer.toByteArray();
     }

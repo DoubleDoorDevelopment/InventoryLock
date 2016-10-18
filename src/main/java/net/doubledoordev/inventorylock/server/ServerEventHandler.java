@@ -28,6 +28,7 @@ import com.mojang.authlib.GameProfile;
 import net.doubledoordev.inventorylock.InventoryLock;
 import net.doubledoordev.inventorylock.util.Action;
 import net.doubledoordev.inventorylock.util.BetterLockCode;
+import net.doubledoordev.inventorylock.util.Helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.entity.player.EntityPlayer;
@@ -36,9 +37,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.ILockableContainer;
 import net.minecraft.world.LockCode;
@@ -50,6 +48,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.util.UUID;
 
 import static net.doubledoordev.inventorylock.util.Constants.*;
+import static net.minecraft.util.text.TextFormatting.*;
 import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 
 /**
@@ -95,7 +94,7 @@ public class ServerEventHandler
         if (te == null) return;
         if (!(te instanceof ILockableContainer))
         {
-            player.addChatComponentMessage(new TextComponentString("This block is not lockable :(").setStyle(new Style().setColor(TextFormatting.RED)));
+            Helper.chat(player, "This block is not lockable :(", RED);
             return;
         }
         ILockableContainer lc = ((ILockableContainer) te);
@@ -114,9 +113,9 @@ public class ServerEventHandler
             if (existingLc == null || existingLc.isEmpty()) // There is no lock yet, OK
             {
                 lc.setLockCode(new BetterLockCode().add(player.getUniqueID()));
-                player.addChatComponentMessage(new TextComponentString("Locked!").setStyle(new Style().setColor(TextFormatting.GREEN)));
+                Helper.chat(player, "Locked!", GREEN);
             }
-            else player.addChatComponentMessage(new TextComponentString("This block is already locked.").setStyle(new Style().setColor(TextFormatting.RED)));
+            else Helper.chat(player, "This block is already locked.", RED);
 
             return; // End of any LOCK case
         }
@@ -124,12 +123,12 @@ public class ServerEventHandler
         //noinspection ConstantConditions
         if (existingLc == null || existingLc.isEmpty())
         {
-            player.addChatComponentMessage(new TextComponentString("This block is not locked.").setStyle(new Style().setColor(TextFormatting.RED)));
+            Helper.chat(player, "This block is not locked.", RED);
             return;
         }
         if (!(existingLc instanceof BetterLockCode))
         {
-            player.addChatComponentMessage(new TextComponentString("This block is not locked via " + MOD_ID + ".").setStyle(new Style().setColor(TextFormatting.RED)));
+            Helper.chat(player, "This block is not locked via " + MOD_ID + ".", RED);
             return;
         }
         BetterLockCode blc = ((BetterLockCode) existingLc);
@@ -140,20 +139,20 @@ public class ServerEventHandler
         }
         if (!blc.canEdit(player))
         {
-            player.addChatComponentMessage(new TextComponentString("You do not have access to this block.").setStyle(new Style().setColor(TextFormatting.RED)));
+            Helper.chat(player, "You do not have access to this block.", RED);
             return;
         }
         // LOCK is already handled.
         if (action == Action.UNLOCK) // We want to unlock (set back to the EMPTY_CODE singleton)
         {
             lc.setLockCode(LockCode.EMPTY_CODE);
-            player.addChatComponentMessage(new TextComponentString("Unlocked!").setStyle(new Style().setColor(TextFormatting.GREEN)));
+            Helper.chat(player, "Unlocked!", GREEN);
             return;
         }
         else if (action == Action.PUBLIC) // We want to make public (set back to the EMPTY_CODE singleton)
         {
             blc.setPublic(!blc.isPublic());
-            player.addChatComponentMessage(new TextComponentString("Unlocked!").setStyle(new Style().setColor(TextFormatting.GREEN)));
+            Helper.chat(player, "Chest now " + (blc.isPublic() ? "public!" : "private!"), GREEN);
             return;
         }
         else if (action == Action.ADD) // We want to add uuids
@@ -176,15 +175,15 @@ public class ServerEventHandler
 
     private void printList(EntityPlayer player, BetterLockCode blc)
     {
-        if (blc.isPublic()) player.addChatComponentMessage(new TextComponentString("Public chest, but owned by:").setStyle(new Style().setColor(TextFormatting.AQUA)));
-        else player.addChatComponentMessage(new TextComponentString("People with access:").setStyle(new Style().setColor(TextFormatting.AQUA)));
+        if (blc.isPublic()) Helper.chat(player, "Public chest, but owned by:", AQUA);
+        else Helper.chat(player, "People with access:", AQUA);
         for (UUID uuid : blc.list)
         {
             //noinspection ConstantConditions
             PlayerProfileCache ppc = player.getServer().getPlayerProfileCache();
             GameProfile gp = ppc.getProfileByUUID(uuid);
-            if (gp == null) player.addChatComponentMessage(new TextComponentString(uuid.toString()).setStyle(new Style().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString("Missing username...")))));
-            else player.addChatComponentMessage(new TextComponentString(gp.getName()).setStyle(new Style().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(uuid.toString())))));
+            if (gp == null) Helper.chat(player, uuid.toString(), HoverEvent.Action.SHOW_TEXT, "Missing username...");
+            else Helper.chat(player, gp.getName(), HoverEvent.Action.SHOW_TEXT, uuid.toString());
         }
     }
 }

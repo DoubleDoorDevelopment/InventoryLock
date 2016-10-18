@@ -28,18 +28,15 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.LockCode;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.doubledoordev.inventorylock.util.Constants.PUBLIC_KEY;
+import static net.doubledoordev.inventorylock.util.Constants.*;
+import static net.minecraft.entity.player.EntityPlayer.PERSISTED_NBT_TAG;
+import static net.minecraft.util.text.TextFormatting.GRAY;
 
 /**
  * @author Dries007
@@ -73,10 +70,9 @@ public class BetterLockCode extends LockCode
 
     public boolean canEdit(EntityPlayer player)
     {
-        MinecraftServer server = player.getServer();
-        if (server != null && server.getPlayerList().getOppedPlayers().getPermissionLevel(player.getGameProfile()) > 0)
+        if (player.getEntityData().getCompoundTag(PERSISTED_NBT_TAG).getBoolean(BYPASS_KEY) && player.canCommandSenderUseCommand(1, MOD_ID))
         {
-            if (!list.contains(player.getUniqueID())) player.addChatComponentMessage(new TextComponentString("OP Bypass").setStyle(new Style().setColor(TextFormatting.GRAY)));
+            if (!list.contains(player.getUniqueID())) Helper.chat(player, "OP Bypass", GRAY);
             return true;
         }
         return list.contains(player.getUniqueID());

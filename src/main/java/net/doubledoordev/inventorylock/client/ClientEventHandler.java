@@ -29,14 +29,10 @@ import com.google.common.cache.CacheBuilder;
 import net.doubledoordev.inventorylock.InventoryLock;
 import net.doubledoordev.inventorylock.network.Reply;
 import net.doubledoordev.inventorylock.network.Request;
-import net.doubledoordev.inventorylock.util.Action;
-import net.doubledoordev.inventorylock.util.Constants;
 import net.doubledoordev.inventorylock.util.Wand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.ILockableContainer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -50,6 +46,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static net.doubledoordev.inventorylock.util.Action.NONE;
+import static net.doubledoordev.inventorylock.util.Constants.MOD_NAME;
+import static net.minecraft.util.math.RayTraceResult.Type.BLOCK;
+import static net.minecraft.util.text.TextFormatting.*;
 
 /**
  * @author Dries007
@@ -67,7 +68,7 @@ public class ClientEventHandler
     public void onItemTooltip(ItemTooltipEvent event)
     {
         Wand wand = new Wand(event.getItemStack());
-        if (wand.getAction() != Action.NONE) event.getToolTip().add(1, Constants.MOD_NAME + " Wand");
+        if (wand.getAction() != NONE) event.getToolTip().add(1, MOD_NAME + " Wand");
     }
 
     @SideOnly(Side.CLIENT)
@@ -76,7 +77,7 @@ public class ClientEventHandler
     {
         Minecraft mc = Minecraft.getMinecraft();
         if (!mc.gameSettings.showDebugInfo) return;
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK && mc.objectMouseOver.getBlockPos() != null)
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == BLOCK && mc.objectMouseOver.getBlockPos() != null)
         {
             BlockPos blockpos = mc.objectMouseOver.getBlockPos();
             TileEntity te = mc.theWorld.getTileEntity(blockpos);
@@ -86,7 +87,7 @@ public class ClientEventHandler
             List<String> right = event.getRight();
 
             right.add("");
-            right.add(TextFormatting.GREEN + "Lockable!");
+            right.add(GREEN + "Lockable!");
             right.add("This info updates every 5 seconds.");
 
             Reply reply = LOCK_CACHE.getIfPresent(blockpos);
@@ -97,11 +98,11 @@ public class ClientEventHandler
             }
             if (reply.value.isEmpty())
             {
-                right.add(TextFormatting.GOLD + "Unlocked");
+                right.add(GOLD + "Unlocked");
                 return;
             }
-            right.add(TextFormatting.GOLD + "Locked");
-            right.add(reply.pub ? TextFormatting.GOLD + "Public" : (reply.value.contains(mc.thePlayer.getName()) ? TextFormatting.GREEN + "You have access!" : TextFormatting.RED + "You do not have access."));
+            right.add(GOLD + "Locked");
+            right.add(reply.pub ? GOLD + "Public" : (reply.value.contains(mc.thePlayer.getName()) ? GREEN + "You have access!" : RED + "You do not have access."));
             right.add("List of people with access:");
             right.addAll(reply.value);
         }
@@ -115,7 +116,7 @@ public class ClientEventHandler
         if (mc.theWorld == null) return;
         if (event.phase != TickEvent.Phase.START) return;
         if (!mc.gameSettings.showDebugInfo) return;
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK && mc.objectMouseOver.getBlockPos() != null)
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == BLOCK && mc.objectMouseOver.getBlockPos() != null)
         {
             BlockPos blockpos = mc.objectMouseOver.getBlockPos();
             TileEntity te = mc.theWorld.getTileEntity(blockpos);

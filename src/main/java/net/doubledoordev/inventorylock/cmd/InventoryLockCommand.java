@@ -27,24 +27,31 @@ package net.doubledoordev.inventorylock.cmd;
 import com.google.common.collect.ImmutableList;
 import com.mojang.authlib.GameProfile;
 import net.doubledoordev.inventorylock.InventoryLock;
-import net.doubledoordev.inventorylock.util.Action;
+import net.doubledoordev.inventorylock.util.Constants;
+import net.doubledoordev.inventorylock.util.Helper;
 import net.doubledoordev.inventorylock.util.Wand;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerProfileCache;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static net.doubledoordev.inventorylock.util.Action.*;
+import static net.doubledoordev.inventorylock.util.Constants.BYPASS_KEY;
+import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
+import static net.minecraft.entity.player.EntityPlayer.PERSISTED_NBT_TAG;
+import static net.minecraft.util.EnumHand.MAIN_HAND;
+import static net.minecraft.util.EnumHand.OFF_HAND;
+import static net.minecraft.util.text.TextFormatting.*;
 
 /**
  * @author Dries007
@@ -54,7 +61,7 @@ public class InventoryLockCommand extends CommandBase
     @Override
     public String getCommandName()
     {
-        return "inventorylock";
+        return MOD_ID;
     }
 
     @Override
@@ -72,7 +79,7 @@ public class InventoryLockCommand extends CommandBase
     @Override
     public String getCommandUsage(ICommandSender sender)
     {
-        return "Use '/inventorylock help' for more info.";
+        return "Use '/invlock help' for more info.";
     }
 
     @Override
@@ -83,38 +90,46 @@ public class InventoryLockCommand extends CommandBase
         else if (args[0].equalsIgnoreCase("list")) listKeys(player);
         else if (args[0].equalsIgnoreCase("lock"))
         {
-            Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Lock wand").setAction(Action.LOCK);
-            player.addChatComponentMessage(new TextComponentString("You are now holding a Lock wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+            Wand.from(player, MAIN_HAND).setDisplayName("Lock wand").setAction(LOCK);
+            Helper.chat(player, "You are now holding a Lock wand.", AQUA);
         }
         else if (args[0].equalsIgnoreCase("unlock"))
         {
-            Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Unlock wand").setAction(Action.UNLOCK);
-            player.addChatComponentMessage(new TextComponentString("You are now holding a Unlock wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+            Wand.from(player, MAIN_HAND).setDisplayName("Unlock wand").setAction(UNLOCK);
+            Helper.chat(player, "You are now holding a Unlock wand.", AQUA);
         }
         else if (args[0].equalsIgnoreCase("clone"))
         {
-            Wand.from(player, EnumHand.MAIN_HAND).clone(player, EnumHand.OFF_HAND);
-            player.addChatComponentMessage(new TextComponentString("Wand cloned.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+            Wand.from(player, MAIN_HAND).clone(player, OFF_HAND);
+            Helper.chat(player, "Wand cloned.", AQUA);
         }
         else if (args[0].equalsIgnoreCase("inspect"))
         {
-            Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Inspect wand").setAction(Action.INSPECT);
-            player.addChatComponentMessage(new TextComponentString("You are now holding a Inspect wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+            Wand.from(player, MAIN_HAND).setDisplayName("Inspect wand").setAction(INSPECT);
+            Helper.chat(player, "You are now holding a Inspect wand.", AQUA);
         }
         else if (args[0].equalsIgnoreCase("public"))
         {
-            Wand.from(player, EnumHand.MAIN_HAND).setDisplayName("Public wand").setAction(Action.PUBLIC);
-            player.addChatComponentMessage(new TextComponentString("You are now holding a Public wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
+            Wand.from(player, MAIN_HAND).setDisplayName("Public wand").setAction(PUBLIC);
+            Helper.chat(player, "You are now holding a Public wand.", AQUA);
         }
         else if (args[0].equalsIgnoreCase("add")) doAdd(server, player, args);
         else if (args[0].equalsIgnoreCase("remove")) doRemove(server, player, args);
+        else if (args[0].equalsIgnoreCase("bypass"))
+        {
+            if (!sender.canCommandSenderUseCommand(1, getCommandName())) throw new CommandException("Permission denied.");
+            NBTTagCompound persist = player.getEntityData().getCompoundTag(PERSISTED_NBT_TAG);
+            persist.setBoolean(Constants.BYPASS_KEY,  !persist.getBoolean(BYPASS_KEY));
+            player.getEntityData().setTag(PERSISTED_NBT_TAG, persist);
+            Helper.chat(player, "OP bypass now " + persist.getBoolean(BYPASS_KEY), AQUA);
+        }
         else displayHelp(player);
     }
 
     @Override
     public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
-        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "help", "list", "lock", "unlock", "clone", "inspect", "public", "add", "remove");
+        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "help", "list", "lock", "unlock", "clone", "inspect", "public", "add", "remove", "bypass");
         if (args.length > 1 && (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove"))) return getListOfStringsMatchingLastWord(args, server.getAllUsernames());
         return super.getTabCompletionOptions(server, sender, args, pos);
     }
@@ -122,8 +137,8 @@ public class InventoryLockCommand extends CommandBase
     private void displayHelp(EntityPlayerMP sender) throws CommandException
     {
         for (String s : new String[]{
-                TextFormatting.AQUA + getCommandName() + " sub command help:",
-                TextFormatting.GREEN + "ProTip: Use TAB to auto complete a command or username!",
+                AQUA + getCommandName() + " sub command help:",
+                GREEN + "ProTip: Use TAB to auto complete a command or username!",
                 "- help: Display this text.",
                 "- list: List what items can become wands.",
                 "- lock: Create a 'Lock wand' from the held item.",
@@ -131,13 +146,13 @@ public class InventoryLockCommand extends CommandBase
                 "- clone: Copy a wand from primary to secondary hand.",
                 "- inspect: Create a 'Inspect wand' from the held item.",
                 "- public: Create a 'Public wand' from the held item.",
-                TextFormatting.AQUA + "If you are holding an existing Add or Remove wand:",
+                AQUA + "If you are holding an existing Add or Remove wand:",
                 "- add [name or UUID] ... : Add names to the UUID list.",
                 "- remove [name or UUID] ... : Remove names from the UUID list.",
-                TextFormatting.AQUA + "If you are NOT holding an existing Add or Remove wand:",
+                AQUA + "If you are NOT holding an existing Add or Remove wand:",
                 "- add [name or UUID] ... : Create a 'Add wand'.",
                 "- remove [name or UUID] ... : Create a 'Remove wand'.",
-        }) sender.addChatComponentMessage(new TextComponentString(s));
+        }) sender.addChatMessage(new TextComponentString(s));
     }
 
     private void listKeys(EntityPlayerMP player)
@@ -145,40 +160,40 @@ public class InventoryLockCommand extends CommandBase
         List<String> list = InventoryLock.getKeyItems();
         if (list.isEmpty())
         {
-            player.addChatComponentMessage(new TextComponentString("Any item can be used.").setStyle(new Style().setColor(TextFormatting.GREEN)));
+            Helper.chat(player, "Any item can be used.", GREEN);
             return;
         }
-        player.addChatComponentMessage(new TextComponentString("List of wand-able items:").setStyle(new Style().setColor(TextFormatting.AQUA)));
-        for (String item : list) player.addChatComponentMessage(new TextComponentString(item));
+        Helper.chat(player, "List of wand-able items:", AQUA);
+        for (String item : list) player.addChatMessage(new TextComponentString(item));
     }
 
     private void doAdd(MinecraftServer server, EntityPlayerMP player, String[] args) throws CommandException
     {
-        Wand wand = Wand.from(player, EnumHand.MAIN_HAND);
+        Wand wand = Wand.from(player, MAIN_HAND);
         Map<UUID, String> map = wand.getUUIDs();
         boolean newWand = !wand.getAction().hasUUIDs;
-        if (newWand) wand.setDisplayName("Add wand").setAction(Action.ADD);
+        if (newWand) wand.setDisplayName("Add wand").setAction(ADD);
         int diff = map.size();
         parseArgs(server.getPlayerProfileCache(), player, args, map, false);
         diff = map.size() - diff;
-        if (newWand) player.addChatComponentMessage(new TextComponentString("You are now holding a Add wand with " + diff + " names.").setStyle(new Style().setColor(TextFormatting.AQUA)));
-        else if (diff > 0) player.addChatComponentMessage(new TextComponentString("Added " + diff + " names to existing wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
-        else player.addChatComponentMessage(new TextComponentString("Wand was not modified.").setStyle(new Style().setColor(TextFormatting.RED)));
+        if (newWand) Helper.chat(player, "You are now holding a Add wand with " + diff + " names.", AQUA);
+        else if (diff > 0) Helper.chat(player, "Added " + diff + " names to existing wand.", AQUA);
+        else Helper.chat(player, "Wand was not modified.", RED);
         wand.setUUIDs(map);
     }
 
     private void doRemove(MinecraftServer server, EntityPlayerMP player, String[] args) throws CommandException
     {
-        Wand wand = Wand.from(player, EnumHand.MAIN_HAND);
+        Wand wand = Wand.from(player, MAIN_HAND);
         Map<UUID, String> map = wand.getUUIDs();
         boolean newWand = !wand.getAction().hasUUIDs;
-        if (newWand) wand.setDisplayName("Remove wand").setAction(Action.REMOVE);
+        if (newWand) wand.setDisplayName("Remove wand").setAction(REMOVE);
         int diff = map.size();
         parseArgs(server.getPlayerProfileCache(), player, args, map, !newWand);
         diff = map.size() - diff;
-        if (newWand) player.addChatComponentMessage(new TextComponentString("You are now holding a Remove wand with " + diff + " names.").setStyle(new Style().setColor(TextFormatting.AQUA)));
-        else if (diff < 0) player.addChatComponentMessage(new TextComponentString("Removed " + (-diff) + " names to existing wand.").setStyle(new Style().setColor(TextFormatting.AQUA)));
-        else player.addChatComponentMessage(new TextComponentString("Wand was not modified.").setStyle(new Style().setColor(TextFormatting.RED)));
+        if (newWand) Helper.chat(player, "You are now holding a Remove wand with " + diff + " names.", AQUA);
+        else if (diff < 0) Helper.chat(player, "Removed " + (-diff) + " names to existing wand.", AQUA);
+        else Helper.chat(player, "Wand was not modified.", RED);
         wand.setUUIDs(map);
     }
 
@@ -202,7 +217,7 @@ public class InventoryLockCommand extends CommandBase
             {
                 profile = ppc.getGameProfileForUsername(args[i]);
             }
-            if (profile == null) player.addChatMessage(new TextComponentString("Username " + args[i] + " could not be turned into UUID.").setStyle(new Style().setColor(TextFormatting.RED)));
+            if (profile == null) Helper.chat(player, "Username " + args[i] + " could not be turned into UUID.", RED);
             else
             {
                 if (remove) map.remove(profile.getId());

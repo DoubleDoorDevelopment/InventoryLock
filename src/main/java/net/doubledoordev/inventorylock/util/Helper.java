@@ -22,38 +22,28 @@
  * SOFTWARE.
  */
 
-package net.doubledoordev.inventorylock.asm;
+package net.doubledoordev.inventorylock.util;
 
-import net.doubledoordev.inventorylock.util.BetterLockCode;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.LockCode;
-import net.minecraftforge.common.util.Constants.NBT;
-
-import java.util.UUID;
-
-import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
-import static net.doubledoordev.inventorylock.util.Constants.PUBLIC_KEY;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.HoverEvent;
 
 /**
  * @author Dries007
  */
-@SuppressWarnings("unused")
-public class Hooks
+public class Helper
 {
-    /**
-     * replaces net.minecraft.world.LockCode.fromNBT(nbt) everywhere(!)
-     */
-    public static LockCode fromNBT(NBTTagCompound nbt)
+    private Helper() {}
+
+    public static void chat(ICommandSender target, String message, TextFormatting color)
     {
-        if (nbt.hasKey(MOD_ID, NBT.TAG_LIST))
-        {
-            BetterLockCode blc = new BetterLockCode();
-            NBTTagList list = nbt.getTagList(MOD_ID, NBT.TAG_STRING);
-            for (int i = 0; i < list.tagCount(); i++) blc.add(UUID.fromString(list.getStringTagAt(i)));
-            blc.setPublic(nbt.getBoolean(PUBLIC_KEY));
-            return blc;
-        }
-        return LockCode.fromNBT(nbt);
+        target.addChatMessage(new TextComponentString(message).setStyle(new Style().setColor(color)));
+    }
+
+    public static void chat(ICommandSender target, String message, HoverEvent.Action hoverAction, String hoverExtra)
+    {
+        target.addChatMessage(new TextComponentString(message).setStyle(new Style().setHoverEvent(new HoverEvent(hoverAction, new TextComponentString(hoverExtra)))));
     }
 }
