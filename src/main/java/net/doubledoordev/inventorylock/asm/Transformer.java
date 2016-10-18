@@ -33,9 +33,6 @@ import org.objectweb.asm.tree.*;
 
 import static net.doubledoordev.inventorylock.asm.Plugin.LOGGER;
 import static net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper.INSTANCE;
-import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
-import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
-import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.tree.AbstractInsnNode.LABEL;
 
@@ -45,6 +42,11 @@ import static org.objectweb.asm.tree.AbstractInsnNode.LABEL;
 @SuppressWarnings("unused")
 public class Transformer implements IClassTransformer
 {
+    // SEE net.minecraftforge.fml.common.asm.transformers.DeobfuscationTransformer
+    private static final boolean RECALC_FRAMES = Boolean.parseBoolean(System.getProperty("FORGE_FORCE_FRAME_RECALC", "false"));
+    private static final int WRITER_FLAGS = ClassWriter.COMPUTE_MAXS | (RECALC_FRAMES ? ClassWriter.COMPUTE_FRAMES : 0);
+    private static final int READER_FLAGS = RECALC_FRAMES ? ClassReader.SKIP_FRAMES : ClassReader.EXPAND_FRAMES;
+
     private static final String LOCK_CODE_NAME = "fromNBT";
     private static final String BETTER_LOCK_CONTAINS = "contains";
 
@@ -87,7 +89,7 @@ public class Transformer implements IClassTransformer
     {
         ClassNode classNode = new ClassNode();
         ClassReader classReader = new ClassReader(basicClass);
-        classReader.accept(classNode, EXPAND_FRAMES);
+        classReader.accept(classNode, READER_FLAGS);
 
         boolean isPlayer = transformedName.equals(ENTITY_PLAYER_OWNER_NAME);
         if (isPlayer) LOGGER.info("Found EntityPlayer");
@@ -144,7 +146,7 @@ public class Transformer implements IClassTransformer
             }
         }
 
-        final ClassWriter writer = new ClassWriter(COMPUTE_MAXS | COMPUTE_FRAMES);
+        final ClassWriter writer = new ClassWriter(WRITER_FLAGS);
         classNode.accept(writer);
         return writer.toByteArray();
     }

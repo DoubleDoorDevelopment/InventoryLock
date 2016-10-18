@@ -73,7 +73,12 @@ public class ServerEventHandler
         if (player.worldObj.isRemote || protection == 1 && (player == null || player instanceof FakePlayer || player.getGameProfile() == null || player.getUniqueID() == null)) return;
         TileEntity te = event.getWorld().getTileEntity(event.getPos());
         if (!(te instanceof ILockableContainer)) return;
-        if (!player.canOpen(((ILockableContainer) te).getLockCode())) event.setCanceled(true);
+        LockCode lc = ((ILockableContainer) te).getLockCode();
+        if (lc instanceof BetterLockCode)
+        {
+            if (!((BetterLockCode) lc).canEdit(player)) event.setCanceled(true);
+        }
+        else if (!player.canOpen(((ILockableContainer) te).getLockCode())) event.setCanceled(true);
     }
 
     @SubscribeEvent
