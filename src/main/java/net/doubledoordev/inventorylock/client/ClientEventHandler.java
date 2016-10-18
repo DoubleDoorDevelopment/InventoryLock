@@ -67,10 +67,7 @@ public class ClientEventHandler
     public void onItemTooltip(ItemTooltipEvent event)
     {
         Wand wand = new Wand(event.getItemStack());
-        if (wand.getAction() != Action.NONE)
-        {
-            event.getToolTip().add(0, Constants.MOD_ID + " Wand");
-        }
+        if (wand.getAction() != Action.NONE) event.getToolTip().add(1, Constants.MOD_NAME + " Wand");
     }
 
     @SideOnly(Side.CLIENT)
