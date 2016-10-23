@@ -44,6 +44,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
+import static net.doubledoordev.inventorylock.client.ClientEventHandler.CLIENT_EVENT_HANDLER;
 import static net.doubledoordev.inventorylock.server.ServerEventHandler.EVENT_HANDLER;
 import static net.doubledoordev.inventorylock.util.Constants.MOD_ID;
 import static net.doubledoordev.inventorylock.util.Constants.MOD_NAME;
@@ -77,7 +78,7 @@ public class InventoryLock
     public void init(FMLInitializationEvent event)
     {
         MinecraftForge.EVENT_BUS.register(EVENT_HANDLER);
-        if (event.getSide().isClient()) MinecraftForge.EVENT_BUS.register(ClientEventHandler.CLIENT_EVENT_HANDLER);
+        if (event.getSide().isClient()) MinecraftForge.EVENT_BUS.register(CLIENT_EVENT_HANDLER);
     }
 
     @Mod.EventHandler

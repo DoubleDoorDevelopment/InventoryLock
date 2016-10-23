@@ -135,7 +135,11 @@ public class Transformer implements IClassTransformer
             {
                 if (node.getOpcode() != INVOKESTATIC) continue;
                 MethodInsnNode methodInsnNode = ((MethodInsnNode) node);
-                if (methodInsnNode.owner.equals(LOCK_CODE_OWNER) &&
+//                if (transformedName.equals("net.minecraft.tileentity.TileEntityLockable"))
+//                    LOGGER.info("In {} ({}) Method {}.{}{} Translated {}.{}{}", name, transformedName,
+//                            methodInsnNode.owner, methodInsnNode.name, methodInsnNode.desc,
+//                            INSTANCE.map(methodInsnNode.owner), INSTANCE.mapMethodName(methodInsnNode.owner, methodInsnNode.name, methodInsnNode.desc), INSTANCE.mapMethodDesc(methodInsnNode.desc).equals(LOCK_CODE_DESC));
+                if (INSTANCE.map(methodInsnNode.owner).equals(LOCK_CODE_OWNER) &&
                         INSTANCE.mapMethodDesc(methodInsnNode.desc).equals(LOCK_CODE_DESC) &&
                         INSTANCE.mapMethodName(methodInsnNode.owner, methodInsnNode.name, methodInsnNode.desc).equals(LOCK_CODE_TARGET))
                 {
