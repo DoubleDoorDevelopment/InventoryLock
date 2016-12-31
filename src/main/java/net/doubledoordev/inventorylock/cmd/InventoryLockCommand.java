@@ -59,13 +59,13 @@ import static net.minecraft.util.text.TextFormatting.*;
 public class InventoryLockCommand extends CommandBase
 {
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return MOD_ID;
     }
 
     @Override
-    public List<String> getCommandAliases()
+    public List<String> getAliases()
     {
         return ImmutableList.of("invlock");
     }
@@ -77,7 +77,7 @@ public class InventoryLockCommand extends CommandBase
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender)
+    public String getUsage(ICommandSender sender)
     {
         return "Use '/invlock help' for more info.";
     }
@@ -117,7 +117,7 @@ public class InventoryLockCommand extends CommandBase
         else if (args[0].equalsIgnoreCase("remove")) doRemove(server, player, args);
         else if (args[0].equalsIgnoreCase("bypass"))
         {
-            if (!sender.canCommandSenderUseCommand(1, getCommandName())) throw new CommandException("Permission denied.");
+            if (!sender.canUseCommand(1, getName())) throw new CommandException("Permission denied.");
             NBTTagCompound persist = player.getEntityData().getCompoundTag(PERSISTED_NBT_TAG);
             persist.setBoolean(Constants.BYPASS_KEY,  !persist.getBoolean(BYPASS_KEY));
             player.getEntityData().setTag(PERSISTED_NBT_TAG, persist);
@@ -127,17 +127,17 @@ public class InventoryLockCommand extends CommandBase
     }
 
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
         if (args.length == 1) return getListOfStringsMatchingLastWord(args, "help", "list", "lock", "unlock", "clone", "inspect", "public", "add", "remove", "bypass");
-        if (args.length > 1 && (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove"))) return getListOfStringsMatchingLastWord(args, server.getAllUsernames());
-        return super.getTabCompletionOptions(server, sender, args, pos);
+        if (args.length > 1 && (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove"))) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        return super.getTabCompletions(server, sender, args, pos);
     }
 
     private void displayHelp(EntityPlayerMP sender) throws CommandException
     {
         for (String s : new String[]{
-                AQUA + getCommandName() + " sub command help:",
+                AQUA + getName() + " sub command help:",
                 GREEN + "ProTip: Use TAB to auto complete a command or username!",
                 "- help: Display this text.",
                 "- list: List what items can become wands.",
@@ -152,7 +152,7 @@ public class InventoryLockCommand extends CommandBase
                 AQUA + "If you are NOT holding an existing Add or Remove wand:",
                 "- add [name or UUID] ... : Create a 'Add wand'.",
                 "- remove [name or UUID] ... : Create a 'Remove wand'.",
-        }) sender.addChatMessage(new TextComponentString(s));
+        }) sender.sendMessage(new TextComponentString(s));
     }
 
     private void listKeys(EntityPlayerMP player)
@@ -164,7 +164,7 @@ public class InventoryLockCommand extends CommandBase
             return;
         }
         Helper.chat(player, "List of wand-able items:", AQUA);
-        for (String item : list) player.addChatMessage(new TextComponentString(item));
+        for (String item : list) player.sendMessage(new TextComponentString(item));
     }
 
     private void doAdd(MinecraftServer server, EntityPlayerMP player, String[] args) throws CommandException

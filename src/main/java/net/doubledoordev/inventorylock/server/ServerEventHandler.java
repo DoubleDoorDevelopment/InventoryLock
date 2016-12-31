@@ -70,7 +70,7 @@ public class ServerEventHandler
         if (protection == 0) return;
         final EntityPlayer player = event.getPlayer();
         //noinspection ConstantConditions
-        if (player.worldObj.isRemote || protection == 1 && (player == null || player instanceof FakePlayer || player.getGameProfile() == null || player.getUniqueID() == null)) return;
+        if (player.world.isRemote || protection == 1 && (player == null || player instanceof FakePlayer || player.getGameProfile() == null || player.getUniqueID() == null)) return;
         TileEntity te = event.getWorld().getTileEntity(event.getPos());
         if (!(te instanceof ILockableContainer)) return;
         LockCode lc = ((ILockableContainer) te).getLockCode();
@@ -85,11 +85,10 @@ public class ServerEventHandler
     public void onPlayerInteractRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
         EntityPlayer player = event.getEntityPlayer();
-        if (player == null || player instanceof FakePlayer || player.worldObj.isRemote) return;
+        if (player == null || player instanceof FakePlayer || player.world.isRemote) return;
         ItemStack stack = event.getItemStack();
-        if (stack == null) return;
-        NBTTagCompound nbt = stack.getSubCompound(MOD_ID, false);
-        //noinspection ConstantConditions
+        if (stack.isEmpty()) return;
+        NBTTagCompound nbt = stack.getSubCompound(MOD_ID);
         if (nbt == null) return;
 
         event.setCanceled(true);

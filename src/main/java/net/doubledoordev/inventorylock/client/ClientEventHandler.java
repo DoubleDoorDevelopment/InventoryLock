@@ -80,7 +80,7 @@ public class ClientEventHandler
         if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == BLOCK && mc.objectMouseOver.getBlockPos() != null)
         {
             BlockPos blockpos = mc.objectMouseOver.getBlockPos();
-            TileEntity te = mc.theWorld.getTileEntity(blockpos);
+            TileEntity te = mc.world.getTileEntity(blockpos);
 
             if (!(te instanceof ILockableContainer)) return;
             
@@ -102,7 +102,7 @@ public class ClientEventHandler
                 return;
             }
             right.add(GOLD + "Locked");
-            right.add(reply.pub ? GOLD + "Public" : (reply.value.contains(mc.thePlayer.getName()) ? GREEN + "You have access!" : RED + "You do not have access."));
+            right.add(reply.pub ? GOLD + "Public" : (reply.value.contains(mc.player.getName()) ? GREEN + "You have access!" : RED + "You do not have access."));
             right.add("List of people with access:");
             right.addAll(reply.value);
         }
@@ -113,13 +113,13 @@ public class ClientEventHandler
     public void onTickClientTick(TickEvent.ClientTickEvent event)
     {
         Minecraft mc = Minecraft.getMinecraft();
-        if (mc.theWorld == null) return;
+        if (mc.world == null) return;
         if (event.phase != TickEvent.Phase.START) return;
         if (!mc.gameSettings.showDebugInfo) return;
         if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == BLOCK && mc.objectMouseOver.getBlockPos() != null)
         {
             BlockPos blockpos = mc.objectMouseOver.getBlockPos();
-            TileEntity te = mc.theWorld.getTileEntity(blockpos);
+            TileEntity te = mc.world.getTileEntity(blockpos);
             if (!(te instanceof ILockableContainer)) return;
             if (LOCK_CACHE.getIfPresent(blockpos) == null) InventoryLock.getSnw().sendToServer(new Request(blockpos));
         }

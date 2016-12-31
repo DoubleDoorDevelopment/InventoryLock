@@ -28,6 +28,7 @@ import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
 import net.doubledoordev.inventorylock.InventoryLock;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -61,7 +62,7 @@ public class Wand
     public static Wand from(EntityPlayerMP player, EnumHand hand) throws CommandException
     {
         ItemStack stack = player.getHeldItem(hand);
-        if (stack == null) throw new CommandException("You need to be holding an item in your " + hand.name().replace('_', ' ').toLowerCase());
+        if (stack.isEmpty()) throw new CommandException("You need to be holding an item in your " + hand.name().replace('_', ' ').toLowerCase());
         List<String> list = InventoryLock.getKeyItems();
         if (!list.isEmpty() && !list.contains(stack.getItem().getRegistryName().toString())) throw new CommandException("This item can't be a key.");
         return new Wand(stack);
@@ -76,21 +77,19 @@ public class Wand
 
     public Action getAction()
     {
-        NBTTagCompound tag = stack.getSubCompound(MOD_ID, false);
-        //noinspection ConstantConditions
+        NBTTagCompound tag = stack.getSubCompound(MOD_ID);
         if (tag == null) return Action.NONE;
         return Action.values()[(int) tag.getByte(ACTION)];
     }
 
     public Wand setAction(Action action)
     {
-        NBTTagCompound tag = stack.getSubCompound(MOD_ID, true);
+        NBTTagCompound tag = stack.getOrCreateSubCompound(MOD_ID);
         tag.setByte(ACTION, (byte) action.ordinal());
         if (!action.hasUUIDs)
         {
             tag.removeTag(UUIDS);
-            NBTTagCompound displayTag = stack.getSubCompound(DISPLAY, false);
-            //noinspection ConstantConditions
+            NBTTagCompound displayTag = stack.getSubCompound(DISPLAY);
             if (displayTag != null) displayTag.removeTag(LORE);
         }
         return this;
@@ -99,16 +98,16 @@ public class Wand
     public void clone(EntityPlayerMP player, EnumHand hand) throws CommandException
     {
         ItemStack stack = player.getHeldItem(hand);
-        if (stack == null) throw new CommandException("You need to be holding an item in your " + hand.name().replace('_', ' ').toLowerCase());
+        if (stack.isEmpty()) throw new CommandException("You need to be holding an item in your " + hand.name().replace('_', ' ').toLowerCase());
         if (this.getAction() == Action.NONE) throw new CommandException("The item you are holding is not a wand.");
-        stack.setTagInfo(MOD_ID, this.stack.getSubCompound(MOD_ID, true));
-        stack.setTagInfo(DISPLAY, this.stack.getSubCompound(DISPLAY, true));
+        stack.setTagInfo(MOD_ID, this.stack.getOrCreateSubCompound(MOD_ID));
+        stack.setTagInfo(DISPLAY, this.stack.getOrCreateSubCompound(DISPLAY));
     }
 
     public Map<UUID, String> getUUIDs()
     {
         Map<UUID, String> map = new LinkedHashMap<UUID, String>();
-        NBTTagCompound tag = stack.getSubCompound(MOD_ID, true);
+        NBTTagCompound tag = stack.getOrCreateSubCompound(MOD_ID);
         NBTTagList list = tag.getTagList(UUIDS, TAG_STRING);
         PlayerProfileCache ppc = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerProfileCache();
         for (int i = 0; i < list.tagCount(); i++)
@@ -130,8 +129,8 @@ public class Wand
             uuidList.appendTag(new NBTTagString(uuid.toString()));
             nameList.appendTag(new NBTTagString(TextFormatting.RESET + map.get(uuid) + ' ' + uuid));
         }
-        NBTTagCompound tag = stack.getSubCompound(MOD_ID, true);
+        NBTTagCompound tag = stack.getOrCreateSubCompound(MOD_ID);
         tag.setTag(UUIDS, uuidList);
-        stack.getSubCompound(DISPLAY, true).setTag(LORE, nameList);
+        stack.getOrCreateSubCompound(DISPLAY).setTag(LORE, nameList);
     }
 }

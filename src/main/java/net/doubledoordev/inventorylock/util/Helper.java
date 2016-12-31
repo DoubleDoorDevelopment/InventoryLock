@@ -39,11 +39,11 @@ public class Helper
 
     public static void chat(ICommandSender target, String message, TextFormatting color)
     {
-        target.addChatMessage(new TextComponentString(message).setStyle(new Style().setColor(color)));
+        target.sendMessage(new TextComponentString(message).setStyle(new Style().setColor(color)));
     }
 
     public static void chat(ICommandSender target, String message, HoverEvent.Action hoverAction, String hoverExtra)
     {
-        target.addChatMessage(new TextComponentString(message).setStyle(new Style().setHoverEvent(new HoverEvent(hoverAction, new TextComponentString(hoverExtra)))));
+        target.sendMessage(new TextComponentString(message).setStyle(new Style().setHoverEvent(new HoverEvent(hoverAction, new TextComponentString(hoverExtra)))));
     }
 }

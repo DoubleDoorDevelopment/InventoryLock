@@ -70,7 +70,7 @@ public class BetterLockCode extends LockCode
 
     public boolean canEdit(EntityPlayer player)
     {
-        if (player.getEntityData().getCompoundTag(PERSISTED_NBT_TAG).getBoolean(BYPASS_KEY) && player.canCommandSenderUseCommand(1, MOD_ID))
+        if (player.getEntityData().getCompoundTag(PERSISTED_NBT_TAG).getBoolean(BYPASS_KEY) && player.canUseCommand(1, MOD_ID))
         {
             if (!list.contains(player.getUniqueID())) Helper.chat(player, "OP Bypass", GRAY);
             return true;
