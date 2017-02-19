@@ -40,9 +40,13 @@ public class Plugin implements IFMLLoadingPlugin
 {
     static final Logger LOGGER = LogManager.getLogger("InventoryLockASM");
 
+    public static boolean loaded = false;
+
     @Override
     public String[] getASMTransformerClass()
     {
+        loaded = true;
+
         return new String[] {"net.doubledoordev.inventorylock.asm.Transformer"};
     }
 

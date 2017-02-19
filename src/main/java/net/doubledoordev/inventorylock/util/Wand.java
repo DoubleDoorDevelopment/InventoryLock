@@ -28,7 +28,6 @@ import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
 import net.doubledoordev.inventorylock.InventoryLock;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;

@@ -69,7 +69,7 @@ public class Request implements IMessage
         @Override
         public Reply onMessage(Request message, MessageContext ctx)
         {
-            TileEntity te = ctx.getServerHandler().playerEntity.getServerWorld().getTileEntity(message.key);
+            TileEntity te = ctx.getServerHandler().player.getServerWorld().getTileEntity(message.key);
             if (!(te instanceof ILockableContainer)) return null;
             LockCode lc = ((ILockableContainer) te).getLockCode();
             if (!(lc instanceof BetterLockCode)) return new Reply(message.key, new BetterLockCode());

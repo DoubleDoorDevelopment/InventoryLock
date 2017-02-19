@@ -25,10 +25,12 @@
 package net.doubledoordev.inventorylock;
 
 import com.google.common.collect.ImmutableList;
+import net.doubledoordev.inventorylock.asm.Plugin;
 import net.doubledoordev.inventorylock.client.ClientEventHandler;
 import net.doubledoordev.inventorylock.cmd.InventoryLockCommand;
 import net.doubledoordev.inventorylock.network.Reply;
 import net.doubledoordev.inventorylock.network.Request;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -65,6 +67,11 @@ public class InventoryLock
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
+
+        if (!Plugin.loaded) throw new RuntimeException("The ASM plugin for InventoryLock didn't load. ABORT!");
+
+        // Force EntityPlayer class to load NOW
+        EntityPlayer.getOfflineUUID(MOD_NAME);
 
         config = new Configuration(event.getSuggestedConfigurationFile());
         syncConfig(config);
